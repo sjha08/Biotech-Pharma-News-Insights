@@ -1,0 +1,108 @@
+# ============================================
+# Biotech & Pharma News Analytics Dashboard (Demo)
+# ============================================
+
+# Install dependencies if needed:
+# !pip install pandas matplotlib seaborn
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import re
+from urllib.parse import urljoin
+
+# -----------------------------
+# 1. Generate demo CSV dataset
+# -----------------------------
+data = [
+    {"website": "https://www.gene.com/news", "headline": "Gene Therapy Trial Shows Positive Results", "link": "https://www.gene.com/news1"},
+    {"website": "https://www.gene.com/news", "headline": "Genentech Launches New Oncology Drug", "link": "https://www.gene.com/news2"},
+    {"website": "https://investors.amgen.com/news-and-events/press-releases/", "headline": "Amgen Partners with Biotech Startup", "link": "https://www.amgen.com/news1"},
+    {"website": "https://www.pfizer.com/news", "headline": "Pfizer Receives FDA Approval for Vaccine", "link": "https://www.pfizer.com/news1"},
+    {"website": "https://www.pfizer.com/news", "headline": "Pfizer Invests in AI Drug Discovery Platform", "link": "https://www.pfizer.com/news2"},
+    {"website": "https://verily.com/articles", "headline": "Verily Collaborates on Health Data Initiative", "link": "https://verily.com/news1"},
+    {"website": "https://www.gilead.com/news", "headline": "Gilead Announces Phase 3 Clinical Trial", "link": "https://www.gilead.com/news1"},
+    {"website": "https://www.illumina.com/company/news-center.html", "headline": "Illumina Introduces Next-Gen Sequencer", "link": "https://www.illumina.com/news1"},
+    {"website": "https://www.sutrobio.com/news/", "headline": "SutroBio Launches New Biotech Platform", "link": "https://www.sutrobio.com/news1"},
+    {"website": "https://www.ginkgo.bio/resources/blog/", "headline": "Ginkgo Bio Acquires Zymergen Assets", "link": "https://www.ginkgo.bio/news1"}
+]
+
+df = pd.DataFrame(data)
+print("Demo dataset created:")
+print(df.head())
+
+# -----------------------------
+# 2. Clean headlines
+# -----------------------------
+def clean_text(text):
+    text = str(text).lower()
+    text = re.sub(r'[^\w\s]', '', text)
+    text = text.strip()
+    return text
+
+df['clean_headline'] = df['headline'].apply(clean_text)
+
+# -----------------------------
+# 3. Categorize headlines
+# -----------------------------
+def categorize(text):
+    if any(word in text for word in ["launch", "introduce", "release", "available"]):
+        return "Product Launch"
+    elif any(word in text for word in ["trial", "study", "clinical", "research"]):
+        return "R&D / Clinical Trial"
+    elif any(word in text for word in ["partnership", "collaborate", "alliance", "team"]):
+        return "Partnerships"
+    elif any(word in text for word in ["approval", "fda", "regulatory", "clearance"]):
+        return "Regulatory"
+    elif any(word in text for word in ["acquire", "merger", "buy", "investment"]):
+        return "M&A / Investment"
+    else:
+        return "Other"
+
+df['category'] = df['clean_headline'].apply(categorize)
+
+# -----------------------------
+# 4. Aggregate insights
+# -----------------------------
+# Headlines count per company and category
+category_summary = df.groupby(['website','category']).size().reset_index(name='count')
+print("\nCategory summary by company:")
+print(category_summary)
+
+# Overall trending categories
+trending = df['category'].value_counts()
+print("\nTrending categories overall:")
+print(trending)
+
+# Top companies by total headlines
+company_counts = df['website'].value_counts()
+print("\nTop companies by total headlines:")
+print(company_counts)
+
+# -----------------------------
+# 5. Visualize insights
+# -----------------------------
+# Count of headlines per category
+plt.figure(figsize=(10,6))
+sns.countplot(data=df, x='category', order=trending.index)
+plt.title("Biotech & Pharma News: Headlines by Category")
+plt.ylabel("Number of Headlines")
+plt.xlabel("Category")
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()
+
+# Top companies by total headlines
+plt.figure(figsize=(10,6))
+sns.barplot(x=company_counts.index, y=company_counts.values)
+plt.title("Top Companies by Number of Headlines")
+plt.ylabel("Number of Headlines")
+plt.xlabel("Company")
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()
+
+# Optional: Display top 5 headlines per category
+top_headlines = df.groupby('category').head(5)[['category','headline','link']]
+print("\nTop headlines per category:")
+print(top_headlines)
