@@ -18,11 +18,6 @@ This project demonstrates **analytics leadership** and **data storytelling** ski
 - Top trending themes in biotech and pharma news  
 - Executive-ready tables highlighting key developments  
 
-## How to Run
-1. Clone the Repl or download the repository  
-2. Ensure dependencies are installed: `pandas`, `matplotlib`, `seaborn`  
-3. Run `main.py` to generate charts and tables  
-
 ## Outputs
 - Charts: category distribution, top companies by headlines  
 - Tables: top headlines per category with clickable links  
